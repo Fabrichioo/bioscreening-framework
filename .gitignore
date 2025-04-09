@@ -1,0 +1,37 @@
+.vscode
+
+# Directorios de compilación (por ejemplo, creados por CMake)
+build/
+cmake-build-*/
+
+# Archivos generados por CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CompileCommands.json
+
+# Archivos objeto y binarios intermedios
+*.o
+*.obj
+
+# Bibliotecas y ejecutables generados
+*.a
+*.so
+*.dylib
+*.exe
+bioscreening_seq
+bioscreening
+bioscreening*
+
+# Archivos temporales y de respaldo
+*~
+*.tmp
+*.swp
+
+# Logs y ficheros de depuración
+*.log
+
+# Archivos específicos de sistemas operativos
+.DS_Store
+Thumbs.db
