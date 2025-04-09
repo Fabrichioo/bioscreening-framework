@@ -4,13 +4,15 @@
 #include "Molecule.h"
 
 // Función básica de docking que compara una proteína y un ligando.
-// Devuelve un score numérico (a modo de ejemplo, un scoring dummy)
+// Devuelve un score numérico (se usa el dummy implementado en performDocking)
 float performDocking(const Molecule& protein, const Molecule& ligand);
 
-// Estructura para almacenar el resultado del docking (opcional)
+// Estructura para almacenar el resultado del docking: 
+// índice de proteína, índice de ligando y score de docking.
 struct DockingResult {
+    int proteinIndex;
+    int ligandIndex;
     float score;
-    // Se podrían agregar otros campos, por ejemplo: orientación, posición, etc.
 };
 
 #endif // DOCKING_H

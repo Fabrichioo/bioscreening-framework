@@ -13,25 +13,28 @@ int main(int argc, char* argv[]) {
         std::cerr << "Uso: ./bioscreening [sequential|openmp|mpi|cuda]" << std::endl;
         return 1;
     }
-
+    
     std::string mode = argv[1];
     DataManager dataManager;
     std::vector<Molecule> proteins;
     std::vector<Molecule> ligands;
 
-    // Cargar datos (rutas de ejemplo)
-    dataManager.loadProteins("data/proteins/", proteins);
-    dataManager.loadLigands("data/ligands/", ligands);
+    if (!dataManager.loadProteins("data/proteins/", proteins)) {
+        std::cerr << "Error cargando proteínas." << std::endl;
+        return 1;
+    }
+    if (!dataManager.loadLigands("data/ligands/", ligands)) {
+        std::cerr << "Error cargando ligandos." << std::endl;
+        return 1;
+    }
 
     Timer timer;
     timer.start();
 
     std::vector<float> scores;
-
     if (mode == "sequential") {
-        // Versión secuencial: bucle anidado sobre todos los pares proteína-ligando.
-        for (const auto& protein : proteins) {
-            for (const auto& ligand : ligands) {
+        for (const auto &protein : proteins) {
+            for (const auto &ligand : ligands) {
                 float score = performDocking(protein, ligand);
                 scores.push_back(score);
             }
@@ -41,9 +44,7 @@ int main(int argc, char* argv[]) {
     } else if (mode == "mpi") {
         // mpiDocking(proteins, ligands, scores);
     } else if (mode == "cuda") {
-        // #ifdef __CUDACC__
-        cudaDocking(proteins, ligands, scores);
-        // #endif
+        // cudaDocking(proteins, ligands, scores);
     } else {
         std::cerr << "Modo '" << mode << "' no reconocido." << std::endl;
         return 1;
@@ -52,12 +53,8 @@ int main(int argc, char* argv[]) {
     timer.stop();
     std::cout << "Tiempo de ejecución: " << timer.elapsedMilliseconds() << " ms" << std::endl;
 
-    std::cout << "Total scores calculado: " << scores.size() << std::endl;
-
-    // Ejemplo: se imprimen los primeros 10 scores
-    for (size_t i = 0; i < std::min(scores.size(), size_t(10)); ++i) {
-        std::cout << "Score[" << i << "] = " << scores[i] << std::endl;
-    }
-
+    // Llamada a la función de Utils que analiza y muestra los resultados del docking.
+    analyzeDockingResults(scores, proteins.size(), ligands.size());
+    
     return 0;
 }

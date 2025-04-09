@@ -4,6 +4,8 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <vector>
+#include "Docking.h"  // Para que se conozca la definición de DockingResult
 
 class Timer {
 public:
@@ -17,5 +19,9 @@ private:
 };
 
 void logMessage(const std::string& msg);
+
+// Función para analizar y mostrar los resultados del docking:
+// Recibe el vector de scores, el número de proteínas y el número de ligandos.
+void analyzeDockingResults(const std::vector<float>& scores, int numProteins, int numLigands);
 
 #endif // UTILS_H

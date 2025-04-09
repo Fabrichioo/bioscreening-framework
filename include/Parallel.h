@@ -19,10 +19,10 @@ void openmpDocking(const std::vector<Molecule>& proteins,
 //                 const std::vector<Molecule>& ligands,
 //                 std::vector<float>& scores);
 
-// #ifdef __CUDACC__
+#ifdef __CUDACC__
 void cudaDocking(const std::vector<Molecule>& proteins,
                  const std::vector<Molecule>& ligands,
                  std::vector<float>& scores);
-// #endif
+#endif
 
 #endif // PARALLEL_H

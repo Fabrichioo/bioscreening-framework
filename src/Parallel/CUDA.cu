@@ -1,5 +1,4 @@
-
-// #ifdef __CUDACC__
+#ifdef __CUDACC__
 #include "Parallel.h"
 #include "Docking.h"
 #include "Molecule.h"
@@ -169,4 +168,4 @@ void cudaDocking(const std::vector<Molecule>& proteins,
     cudaFree(d_scores);
 }
 
-// #endif // __CUDACC__
+#endif // __CUDACC__

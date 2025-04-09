@@ -6,7 +6,7 @@ import sys
 
 # Constantes por defecto
 DEFAULT_NUM_PROTEINS       = 100
-DEFAULT_NUM_LIGANDS        = 100
+DEFAULT_NUM_LIGANDS        = 500
 DEFAULT_NUM_ATOMS_PROTEIN  = 1000
 DEFAULT_NUM_ATOMS_LIGAND   = 100
 DEFAULT_PROTEIN_DIR        = "data/proteins"
