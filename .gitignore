@@ -8,7 +8,7 @@ cmake-build-*/
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
-Makefile
+#Makefile
 CompileCommands.json
 
 # Archivos objeto y binarios intermedios

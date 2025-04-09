@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
     } else if (mode == "openmp") {
         openmpDocking(proteins, ligands, scores);
     } else if (mode == "mpi") {
-        mpiDocking(proteins, ligands, scores);
+        // mpiDocking(proteins, ligands, scores);
     } else if (mode == "cuda") {
         // cudaDocking(proteins, ligands, scores);
     } else {
@@ -49,6 +49,8 @@ int main(int argc, char* argv[]) {
 
     timer.stop();
     std::cout << "Tiempo de ejecución: " << timer.elapsedMilliseconds() << " ms" << std::endl;
+
+    std::cout << "Total scores calculado: " << scores.size() << std::endl;
 
     // Ejemplo: se imprimen los primeros 10 scores
     for (size_t i = 0; i < std::min(scores.size(), size_t(10)); ++i) {

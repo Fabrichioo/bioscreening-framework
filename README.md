@@ -8,51 +8,56 @@ Este proyecto forma parte de la asignatura de Programación de Arquitecturas Mul
 ## Características
 
 - **Multimodalidad:** Soporta ejecución secuencial, OpenMP (paralelización en multi-hilo), MPI (paralelización distribuida) y CUDA (aceleración en GPU).
-- **Modularidad:** Diseño orientado a objetos, dividiendo la funcionalidad en módulos (DataManager, Molecule, Docking, Parallel, Utils).
-- **Extensibilidad:** La estructura del framework permite ampliar o reemplazar partes específicas (por ejemplo, añadir nuevos formatos de entrada o algoritmos de scoring).
-- **Enfoque didáctico:** Documentación detallada y tests unitarios e integración para facilitar la comprensión de cada componente.
-- **Herramientas de Build:** Uso de CMake para la generación de makefiles y la integración de dependencias como MPI, CUDA y OpenMP.
+- **Modularidad:** Diseño orientado a objetos, con separación en módulos (DataManager, Molecule, Docking, Parallel, Utils) que facilitan su extensión o modificación.
+- **Enfoque didáctico:** Incluye documentación, tests unitarios y ejemplos de ejecución para comprender el funcionamiento y la integración de técnicas HPC.
+- **Generación de dataset intensivo:** Se incluye un script en Python (generate_dataset.py) que permite generar un conjunto de datos grande (proteínas y ligandos) configurable mediante parámetros y constantes, lo que facilita pruebas de rendimiento en escenarios intensivos.
+- **Herramientas de Build:** Uso de CMake para la generación de makefiles y la integración con MPI, CUDA y OpenMP.
 
 ---
 
 ## Estructura del Proyecto
 
-El repositorio se organiza de la siguiente manera:
-
 - **docs/**  
-  Documentación exhaustiva del framework. Puedes navegar por los documentos:
-  - [Overview](docs/Overview.md): Visión general y objetivos del proyecto.
-  - [Architecture](docs/Architecture.md): Descripción de la arquitectura, módulos y organización.
-  - [Installation](docs/Installation.md): Guía de instalación, requisitos y compilación.
-  - [Usage](docs/Usage.md): Instrucciones de uso y ejemplos de ejecución.
-  - [DeveloperGuide](docs/DeveloperGuide.md): Guía para desarrolladores y colaboradores.
+  Documentación que abarca:
+  - Overview: Visión general y objetivos.
+  - Architecture: Descripción de la arquitectura y organización de módulos.
+  - Installation: Guía de instalación y compilación.
+  - Usage: Instrucciones y ejemplos de ejecución.
+  - DeveloperGuide: Guía para desarrolladores y colaboradores.
 
 - **data/**  
-  Archivos de datos mockup para proteínas y ligandos (formatos simplificados para la fase de prueba).
+  Directorio que contiene archivos de prueba y datos reales o generados para el cribado (formatos PDB para proteínas y SDF para ligandos).
 
 - **examples/**  
-  Scripts de ejecución para cada versión (secuencial, OpenMP, MPI y CUDA).
+  Scripts de ejecución para cada versión disponible:
+  - run_sequential.sh
+  - run_openmp.sh
+  - run_mpi.sh
+  - run_cuda.sh
 
 - **include/**  
-  Archivos de cabecera (headers) de los módulos del framework.
+  Archivos de cabecera (headers) en C/C++ con la API del framework.
 
 - **src/**  
-  Código fuente del framework, incluídas las implementaciones de cada módulo y subcarpetas para las estrategias paralelas.
+  Código fuente del framework, con implementaciones de módulos y subdirectorios para estrategias paralelas (OpenMP, MPI, CUDA).
 
 - **tests/**  
-  Tests unitarios e de integración para validar cada componente de manera independiente.
+  Tests unitarios e integración para validar cada módulo y la correcta paralelización (se pueden compilar individualmente).
+
+- **generate_dataset.py**  
+  Script en Python que permite generar un conjunto de datos (dataset) intensivo, configurable mediante parámetros (número de proteínas, ligandos, átomos por molécula y directorios) y utilizando constantes para definir los valores por defecto.
 
 - **CMakeLists.txt**  
-  Archivo de configuración para construir el proyecto utilizando CMake.
+  Archivo de configuración para compilar el proyecto usando CMake.
 
 - **README.md**  
-  Este archivo que ofrece una visión global del proyecto y las instrucciones generales.
+  Archivo actual que ofrece una visión global del proyecto y las instrucciones generales.
 
 ---
 
 ## Requisitos
 
-- C++ (estándar C++14 o superior)
+- C++ (compatible con C++14 o superior; algunos módulos usan exclusivamente C++14 en este ejemplo)
 - [CMake](https://cmake.org/) 3.10 o superior
 - [MPI](https://www.mpi-forum.org/) (por ejemplo, OpenMPI o MPICH)
 - [CUDA](https://developer.nvidia.com/cuda-zone) (si se desea compilar la versión CUDA)
@@ -77,8 +82,7 @@ El repositorio se organiza de la siguiente manera:
    ```
    cmake ..
    ```
-
-   *Si deseas configurar un build en modo Release, puedes usar:*
+   *Para un build en modo Release:*
    ```
    cmake -DCMAKE_BUILD_TYPE=Release ..
    ```
@@ -87,55 +91,80 @@ El repositorio se organiza de la siguiente manera:
    ```
    make
    ```
-
    El ejecutable se llamará `bioscreening`.
+
+---
+
+## Generación del Dataset Intensivo
+
+Para simular entornos con cálculos intensivos, se incluye el script `generate_dataset.py` que permite generar un gran número de archivos de proteínas (en formato PDB) y ligandos (en formato SDF), de forma configurable por parámetros.
+
+### Características del Script
+- **Parámetros Opcionales:** Se pueden especificar el número de proteínas, ligandos, y la cantidad de átomos por cada uno, así como los directorios de salida.
+- **Constantes por Defecto:** Todas las opciones tienen un valor por defecto definido mediante constantes al inicio del script, lo que evita literales dispersos y facilita modificaciones futuras.
+- **Función de Ayuda:** Al ejecutar el script con la opción `--help` o `-h`, se mostrará un mensaje que explica el uso de cada parámetro.
+
+### Ejemplos de Uso
+- Mostrar la ayuda:
+  ```
+  python3 generate_dataset.py --help
+  ```
+
+- Generar el dataset usando los valores por defecto:
+  ```
+  python3 generate_dataset.py
+  ```
+
+- Generar el dataset especificando parámetros personalizados (por ejemplo, 200 proteínas, 150 ligandos, 1000 átomos por proteína y 75 átomos por ligando):
+  ```
+  python3 generate_dataset.py --num_proteins 200 --num_ligands 150 --num_atoms_protein 1000 --num_atoms_ligand 75
+  ```
+
+El script generará los archivos en los directorios configurados (por defecto, `data/proteins` y `data/ligands`).
 
 ---
 
 ## Ejecución
 
-Existen distintos scripts de ejecución en la carpeta `examples/` para ilustrar el uso de cada versión:
+Se pueden ejecutar las diferentes versiones del framework usando los scripts en la carpeta `examples/` o directamente mediante línea de comandos. Por ejemplo:
 
 - **Versión Secuencial:**  
-  Ejecutar:
   ```
   ./bioscreening sequential
   ```
-  O bien, utilizar el script:
+  O:
   ```
   cd examples
   ./run_sequential.sh
   ```
 
 - **Versión OpenMP:**  
-  Ejecutar:
   ```
   export OMP_NUM_THREADS=4
   ./bioscreening openmp
   ```
-  O usar:
+  O:
   ```
   cd examples
   ./run_openmp.sh
   ```
 
 - **Versión MPI:**  
-  Ejecutar (por ejemplo, con 4 procesos):
+  Ejecución con 4 procesos:
   ```
   mpirun -np 4 ./bioscreening mpi
   ```
-  O usando:
+  O:
   ```
   cd examples
   ./run_mpi.sh
   ```
 
 - **Versión CUDA:**  
-  Ejecutar:
   ```
   ./bioscreening cuda
   ```
-  O usar:
+  O:
   ```
   cd examples
   ./run_cuda.sh
@@ -145,7 +174,7 @@ Existen distintos scripts de ejecución en la carpeta `examples/` para ilustrar 
 
 ## Ejecución de Tests
 
-Dentro de la carpeta `tests/` se encuentran varios archivos fuente con tests unitarios para cada módulo y modalidad paralela. Puedes compilar y ejecutar estos tests individualmente mediante CMake (configurando targets para tests) o compilándolos manualmente.
+Dentro de la carpeta `tests/` se encuentran varios archivos fuente con tests unitarios para cada módulo y modalidad paralela. Puedes compilar y ejecutar estos tests individualmente mediante CMake o compilándolos manualmente.
 
 Por ejemplo, para testear el DataManager:
 ```
@@ -157,26 +186,25 @@ g++ -std=c++14 tests/test_DataManager.cpp src/DataManager.cpp -Iinclude -o test_
 
 ## Documentación Adicional
 
-La carpeta `doc/` contiene documentación exhaustiva sobre:
-- Visión general y objetivos.
+La carpeta `docs/` contiene documentación adicional sobre:
+- Visión general y objetivos del proyecto.
 - Arquitectura y diseño del framework.
 - Guía de instalación, uso y ejecución.
 - Guía para desarrolladores y colaboradores.
 
-Se recomienda revisar estos documentos para entender a fondo el proyecto y para orientarse en futuras extensiones o mejoras.
+Se recomienda revisar dichos documentos para comprender a fondo el funcionamiento del framework y poder extenderlo o modificarlo según las necesidades.
 
 ---
 
 ## Contribuciones
 
-Se agradecen contribuciones que mejoren el framework. Si deseas colaborar:
-
-- Haz un fork del repositorio.
-- Crea una rama para tu feature o solución.
-- Envía un pull request con los cambios propuestos.
+Las contribuciones y sugerencias son bienvenidas. Para colaborar:
+- Realiza un fork del repositorio.
+- Crea una rama con las modificaciones necesarias.
+- Envía un pull request detallando las mejoras implementadas.
 
 ---
 
 ## Licencia
 
-Este proyecto está bajo la Licencia MIT.
+Este proyecto se distribuye bajo la Licencia MIT.

@@ -15,14 +15,14 @@ void openmpDocking(const std::vector<Molecule>& proteins,
                    const std::vector<Molecule>& ligands,
                    std::vector<float>& scores);
 
-void mpiDocking(const std::vector<Molecule>& proteins,
-                const std::vector<Molecule>& ligands,
-                std::vector<float>& scores);
+// void mpiDocking(const std::vector<Molecule>& proteins,
+//                 const std::vector<Molecule>& ligands,
+//                 std::vector<float>& scores);
 
-#ifdef __CUDACC__
-void cudaDocking(const std::vector<Molecule>& proteins,
-                 const std::vector<Molecule>& ligands,
-                 std::vector<float>& scores);
-#endif
+// #ifdef __CUDACC__
+// void cudaDocking(const std::vector<Molecule>& proteins,
+//                  const std::vector<Molecule>& ligands,
+//                  std::vector<float>& scores);
+// #endif
 
 #endif // PARALLEL_H
