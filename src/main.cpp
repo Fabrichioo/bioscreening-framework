@@ -41,7 +41,9 @@ int main(int argc, char* argv[]) {
     } else if (mode == "mpi") {
         // mpiDocking(proteins, ligands, scores);
     } else if (mode == "cuda") {
-        // cudaDocking(proteins, ligands, scores);
+        // #ifdef __CUDACC__
+        cudaDocking(proteins, ligands, scores);
+        // #endif
     } else {
         std::cerr << "Modo '" << mode << "' no reconocido." << std::endl;
         return 1;

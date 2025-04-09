@@ -1,3 +1,4 @@
+# Entorno de desarrollo
 .vscode
 
 # Directorios de compilación (por ejemplo, creados por CMake)
@@ -35,3 +36,7 @@ bioscreening*
 # Archivos específicos de sistemas operativos
 .DS_Store
 Thumbs.db
+
+# Datos generados
+data/ligands/*
+data/proteins/*
