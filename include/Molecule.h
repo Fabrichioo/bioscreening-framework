@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-// Estructura para representar un átomo (muy simplificada)
 struct Atom {
     float x, y, z;
     std::string element;
