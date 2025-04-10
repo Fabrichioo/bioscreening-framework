@@ -13,17 +13,23 @@
 
 int main(int argc, char* argv[]) {
 
+    std::string proteinsDir;
+    std::string ligandsDir;
+    bool verbose;
+    
+    parseArguments(argc, argv, proteinsDir, ligandsDir, verbose);
+
     DataManager dataManager;
     std::vector<Molecule> proteins;
     std::vector<Molecule> ligands;
 
-    if (!dataManager.loadProteins("data/proteins/", proteins)) {
-        std::cerr << "Error cargando proteínas." << std::endl;
-        return 1;
+    if (!dataManager.loadProteins(proteinsDir, proteins)) {
+        std::cerr << "Error loading proteins." << std::endl;
+        exit(EXIT_FAILURE);
     }
-    if (!dataManager.loadLigands("data/ligands/", ligands)) {
-        std::cerr << "Error cargando ligandos." << std::endl;
-        return 1;
+    if (!dataManager.loadLigands(ligandsDir, ligands)) {
+        std::cerr << "Error loading ligands." << std::endl;
+        exit(EXIT_FAILURE);
     }
 
     Timer timer;
@@ -46,7 +52,8 @@ int main(int argc, char* argv[]) {
     timer.stop();
     std::cout << "Tiempo de ejecución: " << timer.elapsedMilliseconds() << " ms" << std::endl;
 
-    analyzeDockingResults(scores, proteins.size(), ligands.size());
+    if(verbose)
+        analyzeDockingResults(scores, proteins.size(), ligands.size());
     
     exit(EXIT_SUCCESS);
 }

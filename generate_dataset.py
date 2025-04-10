@@ -3,9 +3,10 @@ import os
 import random
 import argparse
 import sys
+import shutil
 
 # Constantes por defecto
-DEFAULT_NUM_PROTEINS       = 100
+DEFAULT_NUM_PROTEINS       = 50
 DEFAULT_NUM_LIGANDS        = 500
 DEFAULT_NUM_ATOMS_PROTEIN  = 1000
 DEFAULT_NUM_ATOMS_LIGAND   = 100
@@ -28,39 +29,42 @@ Opciones:
     print(help_message)
     sys.exit(0)
 
+def clear_directory(dir_path):
+    if os.path.exists(dir_path):
+        for filename in os.listdir(dir_path):
+            file_path = os.path.join(dir_path, filename)
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+
 def generate_protein(filename, num_atoms):
     with open(filename, "w") as f:
-        # Encabezado PDB simplificado
         f.write("HEADER    GENERATED PROTEIN\n")
         f.write("TITLE     Random Protein\n")
         for i in range(1, num_atoms + 1):
-            # Genera coordenadas aleatorias entre -100.0 y 100.0
             x = random.uniform(-100.0, 100.0)
             y = random.uniform(-100.0, 100.0)
             z = random.uniform(-100.0, 100.0)
-            # Construir la línea: las coordenadas se ubican en columnas fijas
             prefix = "ATOM" + " " * (30 - len("ATOM"))
             coord_str = f"{x:8.3f}{y:8.3f}{z:8.3f}"
             line = prefix + coord_str
-            line = line.ljust(80)  # Completar a 80 caracteres
+            line = line.ljust(80)
             f.write(line + "\n")
         f.write("TER\nEND\n")
 
 def generate_ligand(filename, num_atoms):
     with open(filename, "w") as f:
-        # Encabezado SDF simplificado
         f.write("Generated Ligand\n")
         f.write("Programmatically generated\n")
         f.write("Comment line\n")
         count_line = f"{num_atoms:3d}  0  0  0  0  0            999 V2000"
         f.write(count_line + "\n")
         for i in range(num_atoms):
-            # Genera coordenadas aleatorias entre -50.0 y 50.0
             x = random.uniform(-50.0, 50.0)
             y = random.uniform(-50.0, 50.0)
             z = random.uniform(-50.0, 50.0)
             element = random.choice(["C", "N", "O", "H", "S"])
-            # Formato SDF: cada campo de coordenada ocupa 10 caracteres
             line = f"{x:10.4f}{y:10.4f}{z:10.4f} {element:>3}"
             f.write(line + "\n")
         f.write("M  END\n")
@@ -98,17 +102,20 @@ def main():
     os.makedirs(protein_dir, exist_ok=True)
     os.makedirs(ligand_dir, exist_ok=True)
 
-    print("Generando archivos de proteínas...")
+    clear_directory(protein_dir)
+    clear_directory(ligand_dir)
+
+    print("Generating protein files...")
     for i in range(1, num_proteins + 1):
         filename = os.path.join(protein_dir, f"protein_{i:03d}.pdb")
         generate_protein(filename, num_atoms_protein)
         
-    print("Generando archivos de ligandos...")
+    print("Generating ligand files...")
     for i in range(1, num_ligands + 1):
         filename = os.path.join(ligand_dir, f"ligand_{i:03d}.sdf")
         generate_ligand(filename, num_atoms_ligand)
         
-    print("Generación del dataset completada.")
+    print("Dataset generation completed.")
 
 if __name__ == "__main__":
     main()
