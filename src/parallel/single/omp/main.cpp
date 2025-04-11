@@ -23,7 +23,7 @@ std::vector<float> omp_docking(const std::vector<Molecule>& proteins,
                     << omp_get_num_threads() << " active threads..." << std::endl;
         }
         
-        #pragma omp for collapse(2)
+        #pragma omp for schedule(static) collapse(2)
         for (size_t i = 0; i < proteins.size(); ++i) {
             for (size_t j = 0; j < ligands.size(); ++j) {
                 size_t idx = i * ligands.size() + j;
@@ -32,7 +32,7 @@ std::vector<float> omp_docking(const std::vector<Molecule>& proteins,
         }
     }
     double t2 = omp_get_wtime();
-    std::cout << "Execution time: " << t2 - t1 << " s" << std::endl;
+    std::cout << "Execution time: " << (t2 - t1)*1000 << " ms" << std::endl;
 
     return scores;
 }
