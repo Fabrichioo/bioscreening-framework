@@ -74,7 +74,7 @@ void analyzeDockingResults(const std::vector<float>& scores, int numProteins, in
 void parseArguments(int argc, char* argv[], std::string &proteinsDir, std::string &ligandsDir, bool &verbose) {
     proteinsDir = DEFAULT_PROTEINS_DIR;
     ligandsDir  = DEFAULT_LIGANDS_DIR;
-    verbose = true;
+    verbose = false;
     
     int dirCount = 0;
     
@@ -98,11 +98,13 @@ void parseArguments(int argc, char* argv[], std::string &proteinsDir, std::strin
         }
     }
 
-    std::cout << "Current configuration:" << std::endl;
-    std::cout << " Proteins path: " << proteinsDir << std::endl;
-    std::cout << " Ligands path: " << ligandsDir << std::endl;
-    std::cout << " Verbose mode: " << (verbose ? "enabled" : "disabled") << std::endl;
-    std::cout << std::endl;
+    if(verbose){
+        std::cout << "Current configuration:" << std::endl;
+        std::cout << " Proteins path: " << proteinsDir << std::endl;
+        std::cout << " Ligands path: " << ligandsDir << std::endl;
+        std::cout << " Verbose mode: " << (verbose ? "enabled" : "disabled") << std::endl;
+        std::cout << std::endl;
+    }
 }
 
 void printHelp() {
