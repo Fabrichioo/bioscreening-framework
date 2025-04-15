@@ -30,7 +30,7 @@ case $choice in
         ;;
     3)
         echo "Compilando versión MPI..."
-        mpic++ -std=c++14 -Iinclude -o bioscreening src/parallel/single/mpi/*.cpp src/*.cpp
+        mpic++ -std=c++14 -Iinclude -o bioscreening src/parallel/single/mpi/*.cpp src/*.cpp -O3
         ;;
     *)
         # Por precaución, aunque en condiciones normales no se alcanzará este bloque
