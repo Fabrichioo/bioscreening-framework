@@ -6,11 +6,13 @@ mostrar_menu() {
     echo "1. Secuencial"
     echo "2. OpenMP"
     echo "3. MPI"
+    echo "4. CUDA"
+    echo "5. OpenMP + MPI"
     read -p "Ingrese el número de su elección: " choice
 }
 
-# Verifica si se pasó un argumento y si es válido (1, 2 o 3)
-if [ $# -eq 0 ] || [[ "$1" != "1" && "$1" != "2" && "$1" != "3" ]]; then
+# Verifica si se pasó un argumento y si es válido (1, 2, 3 o 4)
+if [ $# -eq 0 ] || [[ "$1" != "1" && "$1" != "2" && "$1" != "3" && "$1" != "4" && "$1" != "5" ]]; then
     # Si no hay parámetro o es inválido, se muestra el menú interactivo
     mostrar_menu
 else
@@ -32,8 +34,15 @@ case $choice in
         echo "Compilando versión MPI..."
         mpic++ -std=c++14 -Iinclude -o bioscreening src/parallel/single/mpi/*.cpp src/*.cpp -O3
         ;;
+    4)
+        echo "Compilando versión CUDA..."
+        /usr/local/cuda-12/bin/nvcc -std=c++14 -Iinclude -o bioscreening src/*.cpp src/parallel/single/cuda/*
+        ;;
+    5)
+        echo "Compilando versión OpenMP + MPI..."
+        mpic++ -std=c++14 -Iinclude -o bioscreening src/parallel/hibrid/omp_mpi/*.cpp src/*.cpp -O3 -lm -fopenmp
+        ;;
     *)
-        # Por precaución, aunque en condiciones normales no se alcanzará este bloque
-        echo "Opción no válida. Por favor, seleccione 1, 2 o 3."
+        echo "Opción no válida. Por favor, seleccione 1, 2, 3 o 4."
         ;;
 esac
