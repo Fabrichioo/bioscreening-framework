@@ -6,106 +6,110 @@
 #include "Molecule.h"
 #include "Docking.h"
 #include "Utils.h"
+#include <mpi.h>
+#include <omp.h>
 
-/* src/Parallel/MPI_OpenMP.cpp */
-// #include "Parallel.h"
-// #include "Docking.h"    // Para performDocking
-// #include "Molecule.h"
-// #include <mpi.h>
-// #ifdef _OPENMP
-//   #include <omp.h>
-// #endif
-// #include <vector>
-// #include <iostream>
-// #include <cstdlib>
-
-void hybridDocking(const std::vector<Molecule>& proteins,
-                   const std::vector<Molecule>& ligands,
-                   std::vector<float>& scores) {
+std::vector<float> hybrid_docking(const std::vector<Molecule>& proteins, 
+                                  const std::vector<Molecule>& ligands) {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    if (rank == 0)
-        std::cout << "Ejecutando docking híbrido con MPI + OpenMP..." << std::endl;
-
-    // Calcular el total de evaluaciones: (proteínas × ligandos).
     size_t total = proteins.size() * ligands.size();
-    // Distribuir el total entre procesos.
-    size_t chunk = total / size;
+
+    // Distribuir trabajo entre procesos MPI
+    size_t chunk     = total / size;
     size_t remainder = total % size;
     size_t start = rank * chunk + (rank < remainder ? rank : remainder);
-    size_t end = start + chunk + (rank < remainder ? 1 : 0);
-
-    // Cada proceso calculará sus docking en el rango [start, end)
+    size_t end   = start + chunk + (rank < remainder ? 1 : 0);
+    
     std::vector<float> localScores(end - start);
+    
+    #pragma omp parallel
+    {
+        #pragma omp master
+        {
+            std::cout << "Process " << rank << " running hybrid docking with " 
+                      << omp_get_num_threads() << " OpenMP threads." << std::endl;
+        }
+    }
+    
+    double t1 = omp_get_wtime();
 
-    // Utilizar OpenMP para paralelizar el loop en el proceso.
-    #pragma omp parallel for schedule(dynamic)
+    // Docking paralelo
+    #pragma omp parallel for schedule(static)
     for (size_t idx = start; idx < end; ++idx) {
-        int i = idx / ligands.size();   // índice de la proteína
-        int j = idx % ligands.size();     // índice del ligando
+        size_t i = idx / ligands.size();
+        size_t j = idx % ligands.size();
         localScores[idx - start] = performDocking(proteins[i], ligands[j]);
     }
+    
+    double t2 = omp_get_wtime();
+    std::cout << "Process " << rank << " local execution time: " 
+              << (t2 - t1)*1000 << " ms" << std::endl;
 
-    // Recolectar los tamaños locales de cada proceso.
-    int localSize = localScores.size();
-    std::vector<int> recvCounts;
-    std::vector<int> displs;
+    // Recopilar resultados
+    std::vector<float> scores;
     if (rank == 0) {
-        recvCounts.resize(size);
+        scores.resize(total);
     }
-    MPI_Gather(&localSize, 1, MPI_INT,
-               recvCounts.data(), 1, MPI_INT,
-               0, MPI_COMM_WORLD);
-
-    // El proceso maestro prepara el vector final de resultados.
+    
+    int localSize = static_cast<int>(localScores.size());
+    std::vector<int> recvCounts(size);
+    MPI_Gather(&localSize, 1, MPI_INT, recvCounts.data(), 1, MPI_INT, 0, MPI_COMM_WORLD);
+    
+    std::vector<int> displs(size, 0);
     if (rank == 0) {
-        displs.resize(size);
         displs[0] = 0;
         for (int i = 1; i < size; ++i) {
             displs[i] = displs[i - 1] + recvCounts[i - 1];
         }
-        scores.resize(total);
     }
-
-    // Se recopilan los resultados locales en el vector scores en el proceso 0.
+    
     MPI_Gatherv(localScores.data(), localSize, MPI_FLOAT,
                 scores.data(), recvCounts.data(), displs.data(), MPI_FLOAT,
                 0, MPI_COMM_WORLD);
+
+    return scores;
 }
 
 int main(int argc, char* argv[]) {
+    MPI_Init(&argc, &argv);
+
+    std::string proteinsDir;
+    std::string ligandsDir;
+    bool verbose;
+
+    parseArguments(argc, argv, proteinsDir, ligandsDir, verbose);
 
     DataManager dataManager;
-    std::vector<Molecule> proteins;
-    std::vector<Molecule> ligands;
+    std::vector<Molecule> proteins, ligands;
 
-    if (!dataManager.loadProteins("data/proteins/", proteins)) {
-        std::cerr << "Error cargando proteínas." << std::endl;
-        return 1;
+    if (!dataManager.loadProteins(proteinsDir, proteins)) {
+        std::cerr << "Error loading proteins." << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
-    if (!dataManager.loadLigands("data/ligands/", ligands)) {
-        std::cerr << "Error cargando ligandos." << std::endl;
-        return 1;
-    }
-
-    Timer timer;
-    timer.start();
-
-    std::cout << "Sequential Mode" << std::endl;
-    std::vector<float> scores;
-    for (const auto &protein : proteins) {
-        for (const auto &ligand : ligands) {
-            float score = performDocking(protein, ligand);
-            scores.push_back(score);
-        }
+    if (!dataManager.loadLigands(ligandsDir, ligands)) {
+        std::cerr << "Error loading ligands." << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
-    timer.stop();
-    std::cout << "Tiempo de ejecución: " << timer.elapsedMilliseconds() << " ms" << std::endl;
+    double t1, t2;
+    MPI_Barrier(MPI_COMM_WORLD);
+    t1 = MPI_Wtime();
 
-    analyzeDockingResults(scores, proteins.size(), ligands.size());
-    
-    exit(EXIT_SUCCESS);
+    std::vector<float> scores = hybrid_docking(proteins, ligands);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    t2 = MPI_Wtime();
+
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0)
+        std::cout << "Execution time: " << (t2 - t1) * 1000 << " ms" << std::endl;
+    if (rank == 0 && verbose)
+        analyzeDockingResults(scores, proteins.size(), ligands.size());
+
+    MPI_Finalize();
+    return EXIT_SUCCESS;
 }
